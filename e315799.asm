@@ -188,6 +188,8 @@ strVermelhoClaro db "Vermelhos Claros - ",0
 strMagentaClaro db "Magentas Claros - ",0
 strAmarelo db "Amarelos - ",0
 
+strPrimeiraLinha db "O arquivo ",0
+strPrimeiraLinha1 db " contem a seguinte quantidade de ladrilhos:",cr,lf,0
 .code
 .startup
 comecoApp:
@@ -505,7 +507,18 @@ leLinha:
 
 
 mostraContadores:
-
+    ;coloca a primeira linha do arquivo de texto de saida
+    lea dx, strPrimeiraLinha
+    mov bx, handleArqRel
+    call escreveArquivo
+    ;coloca o nome do arquivo
+    lea dx, nomeArquivo
+    mov bx, handleArqRel
+    call escreveArquivo
+    ;coloca o resto da primeira linha
+    lea dx, strPrimeiraLinha1
+    mov bx, handleArqRel
+    call escreveArquivo
     call printaTotalizadores
     lea dx, bufferTeclado
     ;fecha o arquivo com as informações da parede
