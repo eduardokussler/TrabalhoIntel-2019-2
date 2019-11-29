@@ -4,7 +4,7 @@
 
 ;;BUGS: 
 ;nao le arquivo sem .par
-;não imprime paredes 1x1
+
 
 .model small
 .stack
@@ -56,10 +56,10 @@ amareloAscMaiusc equ 'E'
 brancoAscMaiusc equ 'F'
 tamanhoBuffer equ 22
 ;variaveis
-tamanhoQuad db 24
+tamanhoQuad dw 24
 larguraDisp equ 624
 alturaDisp equ 360
-resTmp db 0
+resTmp dw 0
 testeArquivo db ".\teste.rel",0
 inicioParedeX equ 8
 inicioParedeY equ 25
@@ -109,9 +109,10 @@ sw_m	dw	0
 teste db "5",0
 handleTemp dw 0;armazena dados temporarios 
 endTemp dw 0;armazena um endereco temporario
-larguraTemp db 0
-alturaTemp db 0
+larguraTemp dw 0
+alturaTemp dw 0
 corTemp db 0
+alturaTemp1 dw ?
 
 fimProgramaFlag dw ?
 linha db 28 dup(?);o numero maximo de ladrilhos por linha eh 26, mais 2 bytes para o CR LF
@@ -149,6 +150,7 @@ posXQuadCianoClaro dw 460
 posXQuadVermelhoClaro dw 500
 posXQuadMagentaClaro dw 540
 posXQuadAmarelo dw 580
+
 
 ;Posicoes Y dos quadrados de legenda e do texto
 posYQuadLegenda dw 435
@@ -486,18 +488,18 @@ continua:
     ;le a primeiraLinha
     call lePrimeiraLinha
     
-
+    
     lea bx, bufferArq
     mov al, 10
     call zeraArray
     ;ler cores
-    mov al, 0
-    mov alturaTemp, al
-       
+    mov ax, 0
+    mov alturaTemp, ax
+    mov larguraTemp, ax   
     
 leLinha:
-    mov al, alturaTemp
-    cmp al, BYTE PTR altura
+    mov ax, alturaTemp
+    cmp ax, altura
     je mostraContadores
     lea dx, bufferArq
     mov bx, handleArqPar
@@ -1329,7 +1331,7 @@ achouCR:
     mov [bx], BYTE PTR 0 ;apaga o CR do buffer
     lea bx, bufferArq
     call atoi
-    mov largura, ax ;salva o valor da altura em altura
+    mov largura, ax ;salva o valor da largura em largura
     
     lea dx, bufferArq
     mov bx, handleArqPar
@@ -1346,14 +1348,15 @@ lePrimeiraLinha endp
 
 ;dx: endereco pro buffer
 ;bx: o handle do arquivo
+;LargurTemp: largura
 leCores proc near
     mov handleTemp, bx
     mov endTemp, dx
-    mov ah, 0
-    mov larguraTemp, ah ;salva a largura atual em uma variavel temporaria
+    mov ax, 0
+    mov larguraTemp, ax
 testaLarguraLida:
-    mov ah, larguraTemp
-    cmp ah, BYTE PTR largura ;testa se toda a linha ja foi lida
+    mov ax, larguraTemp
+    cmp ax, largura ;testa se toda a linha ja foi lida
     je leCRLF
 
     ;le a cor
@@ -1430,8 +1433,8 @@ testaLarguraLida:
 soma1Amarelo:
     inc totAmarelo
     mov al, amarelo
-    mov cl, larguraTemp
-    mov dl, BYTE PTR alturaTemp
+    mov cx, larguraTemp
+    mov dx, alturaTemp
     call ajeitaPosicaoQuad ;posiciona o quadrado no local adequado
     inc larguraTemp
     jmp testaLarguraLida
@@ -1439,8 +1442,8 @@ soma1Amarelo:
 soma1Azul:
     inc totAzul
     mov al, azul
-    mov cl, larguraTemp
-    mov dl, BYTE PTR alturaTemp
+    mov cx, larguraTemp
+    mov dx,  alturaTemp
     call ajeitaPosicaoQuad ;posiciona o quadrado no local adequado
     inc larguraTemp
     jmp testaLarguraLida
@@ -1448,8 +1451,8 @@ soma1Azul:
 soma1AzulClaro:
     inc totAzulClaro
     mov al, azulClaro
-    mov cl, larguraTemp
-    mov dl, BYTE PTR alturaTemp
+    mov cx, larguraTemp
+    mov dx, alturaTemp
     call ajeitaPosicaoQuad ;posiciona o quadrado no local adequado
     inc larguraTemp
     jmp testaLarguraLida
@@ -1458,8 +1461,8 @@ soma1AzulClaro:
 soma1Ciano:
     inc totCiano
     mov al, ciano
-    mov cl, larguraTemp
-    mov dl, BYTE PTR alturaTemp
+    mov cx, larguraTemp
+    mov dx, alturaTemp
     call ajeitaPosicaoQuad ;posiciona o quadrado no local adequado
     inc larguraTemp
     jmp testaLarguraLida
@@ -1467,8 +1470,8 @@ soma1Ciano:
 soma1CianoClaro:
     inc totCianoClaro
     mov al, cianoClaro
-    mov cl, larguraTemp
-    mov dl, BYTE PTR alturaTemp
+    mov cx, larguraTemp
+    mov dx, alturaTemp
     call ajeitaPosicaoQuad ;posiciona o quadrado no local adequado
     inc larguraTemp
     jmp testaLarguraLida
@@ -1476,8 +1479,8 @@ soma1CianoClaro:
 soma1CinzaClaro:
     inc totCinzaClaro
     mov al, cinzaClaro
-    mov cl, larguraTemp
-    mov dl, BYTE PTR alturaTemp
+    mov cx, larguraTemp
+    mov dx, alturaTemp
     call ajeitaPosicaoQuad ;posiciona o quadrado no local adequado
     inc larguraTemp
     jmp testaLarguraLida
@@ -1485,8 +1488,8 @@ soma1CinzaClaro:
 soma1CinzaEscuro:
     inc totCinzaEscuro
     mov al, cinzaEscuro
-    mov cl, larguraTemp
-    mov dl, BYTE PTR alturaTemp
+    mov cx, larguraTemp
+    mov dx, alturaTemp
     call ajeitaPosicaoQuad ;posiciona o quadrado no local adequado
     inc larguraTemp
     jmp testaLarguraLida
@@ -1494,8 +1497,8 @@ soma1CinzaEscuro:
 soma1Magenta:
     inc totMagenta
     mov al, magenta
-    mov cl, larguraTemp
-    mov dl, BYTE PTR alturaTemp
+    mov cx, larguraTemp
+    mov dx, alturaTemp
     call ajeitaPosicaoQuad ;posiciona o quadrado no local adequado
     inc larguraTemp
     jmp testaLarguraLida
@@ -1503,8 +1506,8 @@ soma1Magenta:
 soma1MagentaClaro:
     inc totMagentaClaro
     mov al, magentaClaro
-    mov cl, larguraTemp
-    mov dl, BYTE PTR alturaTemp
+    mov cx, larguraTemp
+    mov dx, alturaTemp
     call ajeitaPosicaoQuad ;posiciona o quadrado no local adequado
     inc larguraTemp
     jmp testaLarguraLida
@@ -1512,8 +1515,8 @@ soma1MagentaClaro:
 soma1Marrom:
     inc totMarrom
     mov al, marrom
-    mov cl, larguraTemp
-    mov dl, BYTE PTR alturaTemp
+    mov cx, larguraTemp
+    mov dx, alturaTemp
     call ajeitaPosicaoQuad ;posiciona o quadrado no local adequado
     inc larguraTemp
     jmp testaLarguraLida
@@ -1521,8 +1524,8 @@ soma1Marrom:
 soma1Preto:
     inc totPreto
     mov al, preto
-    mov cl, larguraTemp
-    mov dl, BYTE PTR alturaTemp
+    mov cx, larguraTemp
+    mov dx, alturaTemp
     call ajeitaPosicaoQuad ;posiciona o quadrado no local adequado
     inc larguraTemp
     jmp testaLarguraLida
@@ -1530,8 +1533,8 @@ soma1Preto:
 soma1Verde:
     inc totVerde
     mov al, verde
-    mov cl, larguraTemp
-    mov dl, BYTE PTR alturaTemp
+    mov cx, larguraTemp
+    mov dx, alturaTemp
     call ajeitaPosicaoQuad ;posiciona o quadrado no local adequado
     inc larguraTemp
     jmp testaLarguraLida
@@ -1539,8 +1542,8 @@ soma1Verde:
 soma1VerdeClaro:
     inc totVerdeClaro
     mov al, verdeClaro
-    mov cl, larguraTemp
-    mov dl, BYTE PTR alturaTemp
+    mov cx, larguraTemp
+    mov dx, alturaTemp
     call ajeitaPosicaoQuad ;posiciona o quadrado no local adequado
     inc larguraTemp
     jmp testaLarguraLida
@@ -1548,8 +1551,8 @@ soma1VerdeClaro:
 soma1Vermelho:
     inc totVermelho
     mov al, vermelho
-    mov cl, larguraTemp
-    mov dl, BYTE PTR alturaTemp
+    mov cx, larguraTemp
+    mov dx, alturaTemp
     call ajeitaPosicaoQuad ;posiciona o quadrado no local adequado
     inc larguraTemp
     jmp testaLarguraLida
@@ -1557,8 +1560,8 @@ soma1Vermelho:
 soma1VermelhoClaro:
     inc totVermelhoClaro
     mov al, vermelhoClaro
-    mov cl, larguraTemp
-    mov dl, BYTE PTR alturaTemp
+    mov cx, larguraTemp
+    mov dx, alturaTemp
     call ajeitaPosicaoQuad ;posiciona o quadrado no local adequado
     inc larguraTemp
     jmp testaLarguraLida
@@ -1575,23 +1578,25 @@ leCRLF:
 leCores endp
 
 ;recebe em al a cor
-;em cl a larguraAtual
-;em dl a alturaAtual
+;em cx a larguraAtual
+;em dx a alturaAtual
 ajeitaPosicaoQuad proc near
-    mov bh, 0
-    mov bl, tamanhoQuad
+    mov alturaTemp1, dx;salva a altura atual em uma var temporaria pra poder zerar dx
+    mov bx, tamanhoQuad
     mov tamanhoLadoH, bx
     mov tamanhoLadoV, bx
     mov corTemp, al
-    mov al, tamanhoQuad ;coloca pra multiplicar por 24   
-    mul cl
+    mov dx, 0;zera a parte mais significativa dos 32bits
+    mov ax, tamanhoQuad ;coloca pra multiplicar pelo tamanho do quadrado   
+    imul cx
     mov resultadoMult, ax
     mov cx, resultadoMult ;coloca o resultado em cx
     add cx, inicioParedeX;altera o x para ser no comeco do retangulo de desenho
-    mov al, tamanhoQuad
-    mul dl
+    mov ax, tamanhoQuad
+    mov dx, 0
+    imul alturaTemp1
     mov resultadoMult, ax
-    mov dx, resultadoMult ;coloca o resultado em cx
+    mov dx, resultadoMult ;coloca o resultado em dx
     add dx, inicioParedeY; altera o y para ser no comeco do retangulo de desenho
     mov al, corTemp ;coloca a cor em al
     call quadradoCol
@@ -1829,33 +1834,36 @@ printaTotalizadores proc near
 
     ret
 printaTotalizadores endp
-
+;calcula o tamanho que o quadrado pode ter
 calcTamanho proc near
     push ax
     push bx
     mov ax, alturaDisp
-    mov bl, BYTE PTR altura
-    cmp bl, 0
+    mov bx,  altura
+    cmp bx, 0
     je testaLargura0
-    idiv bl;divide 360(altura max disponivel para desenho) pelo numero de linhas
-    mov resTmp, al
+    mov dx, 0 ;zera parte mais significativa dos 32bits
+    idiv bx;divide 360(altura max disponivel para desenho) pelo numero de linhas
+    mov resTmp, ax
     jmp testaLargura1
 testaLargura0:
     mov ax, larguraDisp
-    mov bl, BYTE PTR largura
-    cmp bl, 0
+    mov bx, largura
+    cmp bx, 0
     je move24
-    idiv bl;divide 624(largura max disponivel pra desenho) pelo numero de colunas
+    mov dx, 0 ;zera parte mais significativa dos 32bits
+    idiv bx;divide 624(largura max disponivel pra desenho) pelo numero de colunas
 testaLargura1:
     mov ax, larguraDisp
-    mov bl, BYTE PTR largura
-    cmp bl, 0
+    mov bx, largura
+    cmp bx, 0
     je moveAlt
-    idiv bl;divide 624(largura max disponivel pra desenho) pelo numero de colunas
+    mov dx, 0 ;zera parte mais significativa dos 32bits
+    idiv bx;divide 624(largura max disponivel pra desenho) pelo numero de colunas
 
 cmpLargAlt:
-    cmp al, resTmp
-    jle moveLarg
+    cmp ax, resTmp
+    jbe moveLarg
     jmp moveAlt
 fimCalcTamanho:
     pop bx
@@ -1863,17 +1871,17 @@ fimCalcTamanho:
     ret
 
 moveAlt:
-    mov ah, resTmp
-    mov tamanhoQuad, ah
+    mov ax, resTmp
+    mov tamanhoQuad, ax
     
     jmp fimCalcTamanho
 moveLarg:
-    mov tamanhoQuad, al
+    mov tamanhoQuad, ax
     jmp fimCalcTamanho
 
 move24:
-    mov ah, 24
-    mov tamanhoQuad, ah
+    mov ax, 24
+    mov tamanhoQuad, ax
     jmp fimCalcTamanho
 calcTamanho endp
 ;recebe o endereço do buffer por dx
