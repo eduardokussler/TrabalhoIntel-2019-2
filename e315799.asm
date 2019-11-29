@@ -49,7 +49,7 @@ vermelhoClaroAscMaiusc equ 'C'
 magentaClaroAscMaiusc equ 'D'
 amareloAscMaiusc equ 'E'
 brancoAscMaiusc equ 'F'
-
+tamanhoBuffer equ 22
 ;variaveis
 tamanhoQuad db 24
 larguraDisp equ 624
@@ -90,6 +90,7 @@ totCor db 5 dup(?)
 strTeste db 20 dup(0)
 alturaStr db 10
 larguraStr db 10
+
 
 resultadoMult dw 0
 
@@ -163,8 +164,27 @@ posXTextQuadVermelhoClaro db 63
 posXTextQuadMagentaClaro db 68
 posXTextQuadAmarelo db 73
 corRet db ?
+
+
+strPreto db "Pretos - ",0
+strAzul db "Azuis - ",0
+strVerde db "Verdes - ",0
+strCiano db "Cianos - ",0
+strVermelho db "Vermelhos - ",0
+strMagenta db "Magentas - ",0
+strMarrom db "Marrons - ",0
+strCinzaClaro db "Cinzas Claros - ",0
+strCinzaEscuro db "Cinzas Escuros - ",0
+strAzulClaro db "Azuis Claros - ",0
+strVerdeClaro db "Verdes Claros - ",0
+strCianoClaro db "Cianos Claros - ",0
+strVermelhoClaro db "Vermelhos Claros - ",0
+strMagentaClaro db "Magentas Claros - ",0
+strAmarelo db "Amarelos - ",0
+
 .code
 .startup
+comecoApp:
     mov ax, 0
     mov fimProgramaFlag, ax
     mov fimArquivoFlag, ax
@@ -188,8 +208,8 @@ pedeNome:
     call limpaTecBuffer;zera o buffer de teclado
 
     lea dx, bufferTeclado;le o nome do arquivo
-    mov ah, 0ah
-    int 21h
+    call leTeclado
+    
     ;limpa o array que guarda o nome do arquivo
     lea bx, nomeArquivo
     mov al, 20
@@ -298,7 +318,7 @@ continua:
     ;desenha o retangulo em volta da parede
     mov cx, 0
     mov dx, 20
-    mov al, 0fh
+    mov al, amarelo
     mov bx, 639
     mov tamanhoLadoH, bx
     mov bx, 371
@@ -481,9 +501,12 @@ mostraContadores:
 
     call printaTotalizadores
     
-    ;call alteraModoTexto
-    .exit
-
+    lea bx, bufferTeclado
+    mov al, tamanhoBuffer
+    call limpaTecBuffer
+    lea dx, bufferTeclado
+    call esperaTecla
+    jmp comecoApp
 
 acabouPrograma:
     mov ax, 0
@@ -815,6 +838,10 @@ fimArquivo:
     pop cx
     ret
 leArquivo endp
+
+escreveArquivo proc near
+
+escreveArquivo endp
 
 ;recebe o endereço do array com o nome do arquivo por bx
 ;o nome deve terminar com '\0'
@@ -1679,7 +1706,7 @@ calcTamanho proc near
     mov bl, BYTE PTR altura
     cmp bl, 0
     je testaLargura0
-    div bl;divide 360(altura max disponivel para desenho) pelo numero de linhas
+    idiv bl;divide 360(altura max disponivel para desenho) pelo numero de linhas
     mov resTmp, al
     jmp testaLargura1
 testaLargura0:
@@ -1687,13 +1714,13 @@ testaLargura0:
     mov bl, BYTE PTR largura
     cmp bl, 0
     je move24
-    div bl;divide 624(largura max disponivel pra desenho) pelo numero de colunas
+    idiv bl;divide 624(largura max disponivel pra desenho) pelo numero de colunas
 testaLargura1:
     mov ax, larguraDisp
     mov bl, BYTE PTR largura
     cmp bl, 0
     je moveAlt
-    div bl;divide 624(largura max disponivel pra desenho) pelo numero de colunas
+    idiv bl;divide 624(largura max disponivel pra desenho) pelo numero de colunas
 
 cmpLargAlt:
     cmp al, resTmp
@@ -1718,4 +1745,16 @@ move24:
     mov tamanhoQuad, ah
     jmp fimCalcTamanho
 calcTamanho endp
+;recebe o endereço do buffer por dx
+leTeclado proc near
+    mov ah, 0ah
+    int 21h
+    ret
+leTeclado endp
+;espera uma tecla e, quando pressionada, volta pro inicio do programa
+esperaTecla proc near
+    lea dx, bufferTeclado
+    call leTeclado
+    ret
+esperaTecla endp
 end
