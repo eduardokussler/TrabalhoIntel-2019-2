@@ -3,7 +3,6 @@
 
 
 ;;BUGS: 
-;nao enecerra o programa
 ;nao le arquivo sem .par
 ;não imprime paredes 1x1
 
@@ -200,6 +199,7 @@ comecoApp:
     lea bx, cabecalho
     call printf_s
     lea bx, totCor
+    mov al, 5
     call zeraArray
 pedeNome:
     mov erro, 0
@@ -507,8 +507,13 @@ leLinha:
 mostraContadores:
 
     call printaTotalizadores
-   ; call escreveTotalizadores
     lea dx, bufferTeclado
+    ;fecha o arquivo com as informações da parede
+    mov bx, handleArqPar
+    call fechaArquivo
+    ;fecha o arquivo com o relatorio da parede
+    mov bx, handleArqRel
+    call fechaArquivo
     call esperaTecla
     jmp comecoApp
 
@@ -867,15 +872,30 @@ fechaArquivo endp
 ;em bx o handle do arquivo
 escreveArquivo proc near
     push cx
+    push ax
+    mov endTemp, dx
+    mov handleTemp, bx;coloca o handle em uma variavel temporaria
+    mov cx, 1
+escreveChar:
+    mov bx, endTemp
+;testa se a posicao atual é '\0'
+    cmp BYTE PTR [bx], ch
+    je fimEscreve
     mov cx, 1 ;sempre escreve 1 byte por vez
+    mov dx, bx ;coloca o endereço atual da string em dx
+    mov bx, handleTemp ;restaura o handle para fazer a interrupção
     mov ax, 0
     mov ah, 40h
     int 21H
     jc erroEscreveArq
     mov ax, 0
     mov erro, ax
+    inc endTemp ;atualiza a posicao do ponteiro
+    jmp escreveChar
 erroEscreveArq:
     mov erro, ax
+fimEscreve:
+    pop ax
     pop cx
     ret
 escreveArquivo endp
@@ -1574,6 +1594,11 @@ printaTotalizadores proc near
     mov ax, totPreto
     lea bx, totCor
     call sprintf_w ;converte o total de ladrilhos pretos pra ascii
+    lea dx, strPreto
+    call escreveTotalizadores ;coloca no arquivo
+    lea dx, crlf
+    mov bx, handleArqRel ;coloca o crlf para pular a linha
+    call escreveArquivo
 
     lea bx, totCor
     call printf_s
@@ -1585,7 +1610,11 @@ printaTotalizadores proc near
     mov ax, totAzul
     lea bx, totCor
     call sprintf_w ;converte o total de ladrilhos azuis pra ascii
-
+    lea dx, strAzul
+    call escreveTotalizadores ;coloca no arquivo
+    lea dx, crlf
+    mov bx, handleArqRel ;coloca o crlf para pular a linha
+    call escreveArquivo
     lea bx, totCor
     call printf_s
 
@@ -1596,7 +1625,11 @@ printaTotalizadores proc near
     mov ax, totVerde
     lea bx, totCor
     call sprintf_w ;converte o total de ladrilhos verdes pra ascii
-
+    lea dx, strVerde
+    call escreveTotalizadores ;coloca no arquivo
+    lea dx, crlf
+    mov bx, handleArqRel ;coloca o crlf para pular a linha
+    call escreveArquivo
     lea bx, totCor
     call printf_s
 
@@ -1607,7 +1640,11 @@ printaTotalizadores proc near
     mov ax, totCiano
     lea bx, totCor
     call sprintf_w ;converte o total de ladrilhos cianos pra ascii
-
+    lea dx, strCiano
+    call escreveTotalizadores ;coloca no arquivo
+    lea dx, crlf
+    mov bx, handleArqRel ;coloca o crlf para pular a linha
+    call escreveArquivo
     lea bx, totCor
     call printf_s
 
@@ -1618,7 +1655,11 @@ printaTotalizadores proc near
     mov ax, totVermelho
     lea bx, totCor
     call sprintf_w ;converte o total de ladrilhos vermelhos pra ascii
-
+    lea dx, strVermelho
+    call escreveTotalizadores ;coloca no arquivo
+    lea dx, crlf
+    mov bx, handleArqRel ;coloca o crlf para pular a linha
+    call escreveArquivo
     lea bx, totCor
     call printf_s
 
@@ -1629,7 +1670,11 @@ printaTotalizadores proc near
     mov ax, totMagenta
     lea bx, totCor
     call sprintf_w ;converte o total de ladrilhos magenta pra ascii
-
+    lea dx, strMagenta
+    call escreveTotalizadores ;coloca no arquivo
+    lea dx, crlf
+    mov bx, handleArqRel ;coloca o crlf para pular a linha
+    call escreveArquivo
     lea bx, totCor
     call printf_s
 
@@ -1641,7 +1686,11 @@ printaTotalizadores proc near
     mov ax, totMarrom
     lea bx, totCor
     call sprintf_w ;converte o total de ladrilhos marrons pra ascii
-
+    lea dx, strMarrom
+    call escreveTotalizadores ;coloca no arquivo
+    lea dx, crlf
+    mov bx, handleArqRel ;coloca o crlf para pular a linha
+    call escreveArquivo
     lea bx, totCor
     call printf_s
 
@@ -1652,7 +1701,11 @@ printaTotalizadores proc near
     mov ax, totCinzaClaro
     lea bx, totCor
     call sprintf_w ;converte o total de ladrilhos cinza claro pra ascii
-
+    lea dx, strCinzaClaro
+    call escreveTotalizadores ;coloca no arquivo
+    lea dx, crlf
+    mov bx, handleArqRel ;coloca o crlf para pular a linha
+    call escreveArquivo
     lea bx, totCor
     call printf_s
 
@@ -1663,7 +1716,11 @@ printaTotalizadores proc near
     mov ax, totCinzaEscuro
     lea bx, totCor
     call sprintf_w ;converte o total de ladrilhos cinza escuro pra ascii
-
+    lea dx, strCinzaEscuro
+    call escreveTotalizadores ;coloca no arquivo
+    lea dx, crlf
+    mov bx, handleArqRel ;coloca o crlf para pular a linha
+    call escreveArquivo
     lea bx, totCor
     call printf_s
 
@@ -1674,7 +1731,11 @@ printaTotalizadores proc near
     mov ax, totAzulClaro
     lea bx, totCor
     call sprintf_w ;converte o total de ladrilhos azuis claros pra ascii
-
+    lea dx, strAzulClaro
+    call escreveTotalizadores ;coloca no arquivo
+    lea dx, crlf
+    mov bx, handleArqRel ;coloca o crlf para pular a linha
+    call escreveArquivo
     lea bx, totCor
     call printf_s
 
@@ -1685,7 +1746,11 @@ printaTotalizadores proc near
     mov ax, totVerdeClaro
     lea bx, totCor
     call sprintf_w ;converte o total de ladrilhos verdes claros pra ascii
-
+    lea dx, strVerdeClaro
+    call escreveTotalizadores ;coloca no arquivo
+    lea dx, crlf
+    mov bx, handleArqRel ;coloca o crlf para pular a linha
+    call escreveArquivo
     lea bx, totCor
     call printf_s
 
@@ -1696,7 +1761,11 @@ printaTotalizadores proc near
     mov ax, totCianoClaro
     lea bx, totCor
     call sprintf_w ;converte o total de ladrilhos ciano claros pra ascii
-
+    lea dx, strCianoClaro
+    call escreveTotalizadores ;coloca no arquivo
+    lea dx, crlf
+    mov bx, handleArqRel ;coloca o crlf para pular a linha
+    call escreveArquivo
     lea bx, totCor
     call printf_s
 
@@ -1707,7 +1776,11 @@ printaTotalizadores proc near
     mov ax, totVermelhoClaro
     lea bx, totCor
     call sprintf_w ;converte o total de ladrilhos vermelho claros pra ascii
-
+    lea dx, strVerdeClaro
+    call escreveTotalizadores ;coloca no arquivo
+    lea dx, crlf
+    mov bx, handleArqRel ;coloca o crlf para pular a linha
+    call escreveArquivo
     lea bx, totCor
     call printf_s
 
@@ -1718,7 +1791,11 @@ printaTotalizadores proc near
     mov ax, totMagentaClaro
     lea bx, totCor
     call sprintf_w ;converte o total de ladrilhos magenta claros pra ascii
-
+    lea dx, strMagentaClaro
+    call escreveTotalizadores ;coloca no arquivo
+    lea dx, crlf
+    mov bx, handleArqRel ;coloca o crlf para pular a linha
+    call escreveArquivo
     lea bx, totCor
     call printf_s
 
@@ -1729,7 +1806,11 @@ printaTotalizadores proc near
     mov ax, totAmarelo
     lea bx, totCor
     call sprintf_w ;converte o total de ladrilhos amarelos pra ascii
-
+    lea dx, strAmarelo
+    call escreveTotalizadores ;coloca no arquivo
+    lea dx, crlf
+    mov bx, handleArqRel ;coloca o crlf para pular a linha
+    call escreveArquivo
     lea bx, totCor
     call printf_s
 
@@ -1799,8 +1880,16 @@ esperaTecla proc near
     ret
 esperaTecla endp
 
-
+;recebe em dx, a string com o nome da cor
+;recebe por totCor o total de ladrilhos daquela cor
+;sempre usa o handleArqRel
 escreveTotalizadores proc near
-
+    ;escreve o nome da cor e o total de ladrilhos
+    mov bx, handleArqRel
+    call escreveArquivo
+    lea dx, totCor
+    mov bx, handleArqRel ;escreve o numero de ladrilhos
+    call escreveArquivo
+    ret
 escreveTotalizadores endp
 end
