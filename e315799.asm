@@ -51,6 +51,10 @@ amareloAscMaiusc equ 'E'
 brancoAscMaiusc equ 'F'
 
 ;variaveis
+tamanhoQuad db 24
+larguraDisp equ 624
+alturaDisp equ 360
+resTmp db 0
 testeArquivo db ".\teste.rel",0
 inicioParedeX equ 8
 inicioParedeY equ 25
@@ -83,7 +87,7 @@ largura dw 0
 altura dw 0
 fimArquivoFlag dw 0
 totCor db 5 dup(?)
-
+strTeste db 20 dup(0)
 alturaStr db 10
 larguraStr db 10
 
@@ -1237,7 +1241,7 @@ achouCR:
     lea bx, bufferArq
     mov al, 10
     call zeraArray ;zera o buffer
-
+    call calcTamanho
     ret
 
 
@@ -1477,16 +1481,17 @@ leCores endp
 ;em cl a larguraAtual
 ;em dl a alturaAtual
 ajeitaPosicaoQuad proc near
-    mov bx, 24
+    mov bh, 0
+    mov bl, tamanhoQuad
     mov tamanhoLadoH, bx
     mov tamanhoLadoV, bx
     mov corTemp, al
-    mov al, 24 ;coloca pra multiplicar por 24   
+    mov al, tamanhoQuad ;coloca pra multiplicar por 24   
     mul cl
     mov resultadoMult, ax
     mov cx, resultadoMult ;coloca o resultado em cx
     add cx, inicioParedeX;altera o x para ser no comeco do retangulo de desenho
-    mov al, 24
+    mov al, tamanhoQuad
     mul dl
     mov resultadoMult, ax
     mov dx, resultadoMult ;coloca o resultado em cx
@@ -1666,4 +1671,51 @@ printaTotalizadores proc near
 
     ret
 printaTotalizadores endp
+
+calcTamanho proc near
+    push ax
+    push bx
+    mov ax, alturaDisp
+    mov bl, BYTE PTR altura
+    cmp bl, 0
+    je testaLargura0
+    div bl;divide 360(altura max disponivel para desenho) pelo numero de linhas
+    mov resTmp, al
+    jmp testaLargura1
+testaLargura0:
+    mov ax, larguraDisp
+    mov bl, BYTE PTR largura
+    cmp bl, 0
+    je move24
+    div bl;divide 624(largura max disponivel pra desenho) pelo numero de colunas
+testaLargura1:
+    mov ax, larguraDisp
+    mov bl, BYTE PTR largura
+    cmp bl, 0
+    je moveAlt
+    div bl;divide 624(largura max disponivel pra desenho) pelo numero de colunas
+
+cmpLargAlt:
+    cmp al, resTmp
+    jle moveLarg
+    jmp moveAlt
+fimCalcTamanho:
+    pop bx
+    pop ax
+    ret
+
+moveAlt:
+    mov ah, resTmp
+    mov tamanhoQuad, ah
+    
+    jmp fimCalcTamanho
+moveLarg:
+    mov tamanhoQuad, al
+    jmp fimCalcTamanho
+
+move24:
+    mov ah, 24
+    mov tamanhoQuad, ah
+    jmp fimCalcTamanho
+calcTamanho endp
 end

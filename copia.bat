@@ -1,1 +1,1 @@
-copy "D:\OneDrive\Documentos\Estudos - UFRGS\2o semestre\2o semestre\Arquitetura e Organizacao de Computadores I (INF01108)\Trabalhos\Intel\e315799.asm" "C:\Users\eduar\WORK" /y
+copy "D:\Programming-Exercises\Faculdade\Arq1\TrabalhoIntel-2019-2" "C:\Users\eduar\WORK" /y
