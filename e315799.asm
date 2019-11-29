@@ -1,6 +1,12 @@
 ;;EDUARDO EUGÊNIO KUSSLER
 ;;CARTÃO: 00315799
 
+
+;;BUGS: 
+;nao enecerra o programa
+;nao le arquivo sem .par
+;não imprime paredes 1x1
+
 .model small
 .stack
 
@@ -68,6 +74,7 @@ yInicio dw ?
 xInicioQuad dw ?
 yInicioQuad dw ?
 corQuad db ?
+strErroCria db "Erro ao criar arquivo .rel",0
 pedeNomeArquivo db "Digite o nome do arquivo: ",0
 fimDoApp db "Voce decidiu fechar o programa. Ate mais!", 0
 arquivoInexistente db "Arquivo Inexistente",CR,LF, 0
@@ -76,7 +83,7 @@ arqStr db "Arquivo ",0
 nomeArquivo db 20 dup(?)
 nomeArquivoPrint db 20 dup(?)
 nomeArquivoSaida db 20 dup(?)
-bufferTeclado db 22 dup(?)
+bufferTeclado db 20 dup(?)
 stringErro db CR,LF,"Erro ",0
 stringErroCod db 6 dup(0)
 contador db 0
@@ -204,7 +211,7 @@ pedeNome:
     call printf_s
 
     lea bx, bufferTeclado
-    mov al, 20
+    mov al, tamanhoBuffer
     call limpaTecBuffer;zera o buffer de teclado
 
     lea dx, bufferTeclado;le o nome do arquivo
@@ -308,7 +315,7 @@ continua:
     call criaArquivo
     mov ax, erro
     cmp ax, 0 ;testa se houve erro
-    ;jne deuErro
+    jne deuErro
     
 
     ;exibe a primeira linha com nome e matricula
@@ -500,10 +507,7 @@ leLinha:
 mostraContadores:
 
     call printaTotalizadores
-    
-    lea bx, bufferTeclado
-    mov al, tamanhoBuffer
-    call limpaTecBuffer
+   ; call escreveTotalizadores
     lea dx, bufferTeclado
     call esperaTecla
     jmp comecoApp
@@ -523,10 +527,20 @@ acabouPrograma:
     call fechaArquivo
     .exit 0
 deuErro: 
-    ;call alteraModoTexto
-    lea bx, nomeArquivoSaida
+    mov dl, 0
+    mov dh, 0
+    call alteraModoTexto
+    call setCursor
+    lea bx, cabecalho
     call printf_s
-    .exit
+    call pulaLinha
+    lea bx, strErroCria
+    call printf_s
+    call esperaTecla
+    
+    mov bx, handleArqPar
+    call fechaArquivo
+    jmp comecoApp   
     
 
 ;altera para o modo texto
@@ -630,17 +644,22 @@ drawLineV endp
 ;recebe em bx o endereço para o buffer
 ;recebe em al o numero de bytes que o buffer tem
 limpaTecBuffer proc near
-loopLimpatec: 
+        push cx
+        mov cx, 0
         mov [bx], al ;coloca na posicao 0 do array, o maximo de caracteres que podem ser lidos
         inc bx
+        mov [bx],cl
+loopLimpatec: 
         cmp al, 0
         je fimLimpaTec ;testa se todo o buffer foi limpo
-        mov [bx],  0;zera o buffer na posicao atual
+        mov [bx],  cl;zera o buffer na posicao atual
         inc bx;atualiza o ponteiro para o buffer apontar para a nova posicao
         dec al
         jmp loopLimpatec
 
+
 fimLimpaTec:    
+            pop cx
             ret
 
 limpaTecBuffer endp
@@ -686,7 +705,7 @@ fimCopiaBuffer:
     ret
 
 fimPrograma:
-    mov al, 1
+    mov ax, 1
     mov fimProgramaFlag, ax
     pop dx
     pop cx
@@ -787,12 +806,7 @@ movHandleArq:
             ret
 abreArquivo endp
 
-;fecha o arquivo cujo handle esta em bx
-fechaArquivo proc near
-    mov ah, 3eh
-    int 21H
-    ret
-fechaArquivo endp
+
 
 ;cria o arquivo cujo nome esta apontado por DX
 criaArquivo proc near
@@ -839,10 +853,31 @@ fimArquivo:
     ret
 leArquivo endp
 
-;recebe a string a ser escrita no arquivo
-;o handle do arquivo
-escreveArquivo proc near
+;recebe em bx o handle do arquivo
+fechaArquivo proc near
+    push ax
+    mov ax, 0
+    mov ah, 3eh
+    int 21h
+    pop ax
+    ret
+fechaArquivo endp
 
+;em dx recebe a string a ser escrita no arquivo
+;em bx o handle do arquivo
+escreveArquivo proc near
+    push cx
+    mov cx, 1 ;sempre escreve 1 byte por vez
+    mov ax, 0
+    mov ah, 40h
+    int 21H
+    jc erroEscreveArq
+    mov ax, 0
+    mov erro, ax
+erroEscreveArq:
+    mov erro, ax
+    pop cx
+    ret
 escreveArquivo endp
 
 ;recebe o endereço do array com o nome do arquivo por bx
@@ -1755,8 +1790,17 @@ leTeclado proc near
 leTeclado endp
 ;espera uma tecla e, quando pressionada, volta pro inicio do programa
 esperaTecla proc near
+    
+    lea bx, bufferTeclado
+    mov al, tamanhoBuffer
+    call limpaTecBuffer ;limpa o buffer de teclado
     lea dx, bufferTeclado
     call leTeclado
     ret
 esperaTecla endp
+
+
+escreveTotalizadores proc near
+
+escreveTotalizadores endp
 end
