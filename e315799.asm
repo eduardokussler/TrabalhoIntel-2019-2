@@ -839,6 +839,8 @@ fimArquivo:
     ret
 leArquivo endp
 
+;recebe a string a ser escrita no arquivo
+;o handle do arquivo
 escreveArquivo proc near
 
 escreveArquivo endp
