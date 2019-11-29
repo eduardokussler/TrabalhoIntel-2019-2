@@ -2,9 +2,6 @@
 ;;CARTÃO: 00315799
 
 
-;;BUGS: 
-;nao le arquivo sem .par
-
 
 .model small
 .stack
@@ -61,6 +58,7 @@ larguraDisp equ 624
 alturaDisp equ 360
 resTmp dw 0
 testeArquivo db ".\teste.rel",0
+erroAbreArq dw 0
 inicioParedeX equ 8
 inicioParedeY equ 25
 crlf db CR,LF,0
@@ -207,6 +205,7 @@ comecoApp:
     call zeraArray
 pedeNome:
     mov erro, 0
+    mov erroAbreArq, 0
     call zeraAcumuladores
     mov ax, 0
     mov handleArqPar, ax
@@ -246,24 +245,24 @@ pedeNome:
     lea dx, nomeArquivo
     call abreArquivo
     ;testa se houve erro
-    mov ax, erro
+    
+    mov ax, erroAbreArq
     cmp ax, 0
-    jz trocaExtensao1
+    je trocaExtensao1
     jmp testaExtensao
     ;se não houve erro, testa se falta a extensao no nome do arquivo
 testaExtensao:
-    
     lea bx, nomeArquivo
     lea ax, nomeArquivoSaida
     mov dl, tamanhoNomeArquivo;copia o nome do arquivo para a string de saida
     call copiaString
 
 
-    ;lea bx, nomeArquivo
-    ;call adicionaExtensao
+    lea bx, nomeArquivo
+    call adicionaExtensao
 
     lea bx, nomeArquivoSaida
-    ;call colocaExtensaoSaida
+    call colocaExtensaoSaida
 
     
 
@@ -276,7 +275,7 @@ testaExtensao:
     lea dx, nomeArquivo
     call abreArquivo
     ;testa se houve erro
-    mov ax, erro
+    mov ax, erroAbreArq
     cmp ax, 0
     jz continua
     cmp ax, 2
@@ -284,7 +283,7 @@ testaExtensao:
     jmp mostraErro
 testaErro:
     ;se o handle esta em 0, testa se houve erro
-    mov ax, erro
+    mov ax, erroAbreArq
     cmp ax, 0
     jmp mostraErro ;se houve erro printa o erro
     ;se houve erro, novamente, printa o erro e volta para o começo
@@ -808,6 +807,7 @@ copiaString endp
 
 ;abre o arquivo cujo nome esta em dx
 ;recebe em bx, o endereco do handle
+;retorna em ax o erro
 abreArquivo proc near
     push cx
     mov ah, 3dh ;indica que é para abrir o arquivo
@@ -816,12 +816,13 @@ abreArquivo proc near
     
     jnc movHandleArq ;CF = 0, abertura feita com sucesso
     ;senao, move o erro pra erro
-    mov erro ,ax
+    mov erroAbreArq, ax
+    pop cx
     ret 
 movHandleArq:
             mov [bx], ax
             mov cx, 0
-            mov erro, cx;zera a variavel que guarda o erro
+            mov erroAbreArq, cx;zera a variavel que guarda o erro
             pop cx
             ret
 abreArquivo endp
