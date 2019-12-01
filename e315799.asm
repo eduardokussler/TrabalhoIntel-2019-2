@@ -1589,13 +1589,13 @@ ajeitaPosicaoQuad proc near
     mov corTemp, al
     mov dx, 0;zera a parte mais significativa dos 32bits
     mov ax, tamanhoQuad ;coloca pra multiplicar pelo tamanho do quadrado   
-    imul cx
+    mul cx
     mov resultadoMult, ax
     mov cx, resultadoMult ;coloca o resultado em cx
     add cx, inicioParedeX;altera o x para ser no comeco do retangulo de desenho
     mov ax, tamanhoQuad
     mov dx, 0
-    imul alturaTemp1
+    mul alturaTemp1
     mov resultadoMult, ax
     mov dx, resultadoMult ;coloca o resultado em dx
     add dx, inicioParedeY; altera o y para ser no comeco do retangulo de desenho
@@ -1844,7 +1844,7 @@ calcTamanho proc near
     cmp bx, 0
     je testaLargura0
     mov dx, 0 ;zera parte mais significativa dos 32bits
-    idiv bx;divide 360(altura max disponivel para desenho) pelo numero de linhas
+    div bx;divide 360(altura max disponivel para desenho) pelo numero de linhas
     mov resTmp, ax
     jmp testaLargura1
 testaLargura0:
@@ -1853,14 +1853,14 @@ testaLargura0:
     cmp bx, 0
     je move24
     mov dx, 0 ;zera parte mais significativa dos 32bits
-    idiv bx;divide 624(largura max disponivel pra desenho) pelo numero de colunas
+    div bx;divide 624(largura max disponivel pra desenho) pelo numero de colunas
 testaLargura1:
     mov ax, larguraDisp
     mov bx, largura
     cmp bx, 0
     je moveAlt
     mov dx, 0 ;zera parte mais significativa dos 32bits
-    idiv bx;divide 624(largura max disponivel pra desenho) pelo numero de colunas
+    div bx;divide 624(largura max disponivel pra desenho) pelo numero de colunas
 
 cmpLargAlt:
     cmp ax, resTmp
