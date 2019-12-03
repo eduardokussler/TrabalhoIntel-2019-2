@@ -1572,9 +1572,21 @@ leCRLF:
     mov dx, endTemp
     mov bx, handleTemp
     call leArquivo ;le um byte
+    mov bx, endTemp ; para comparar se é cr mesmo
+    mov al, CR
+    cmp BYTE PTR [bx], al
+    je leLF
+    jmp leCRLF
+leLF:     
     mov dx, endTemp
     mov bx, handleTemp
     call leArquivo ;le um byte
+    mov bx, endTemp
+    mov al, LF
+    cmp BYTE PTR [bx], al
+    je saiLeCores
+    jmp leCRLF
+saiLeCores:
     ret
 leCores endp
 
