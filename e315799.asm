@@ -4,7 +4,7 @@
 
 
 .model small
-.stack
+.stack 2048
 
 .data
 CR equ 13
@@ -71,6 +71,8 @@ yInicio dw ?
 xInicioQuad dw ?
 yInicioQuad dw ?
 corQuad db ?
+flagErroLeitura dw 0
+strErroLeitura db "Erro ao ler o arquivo ",0
 strErroCria db "Erro ao criar arquivo .rel",0
 pedeNomeArquivo db "Digite o nome do arquivo: ",0
 fimDoApp db "Voce decidiu fechar o programa. Ate mais!", 0
@@ -205,6 +207,8 @@ comecoApp:
     call zeraArray
 pedeNome:
     mov erro, 0
+    mov flagErroLeitura, 0
+    mov fimArquivoFlag, 0
     mov erroAbreArq, 0
     call zeraAcumuladores
     mov ax, 0
@@ -854,6 +858,7 @@ saiCriaArquivo:
 criaArquivo endp
 ;recebe em bx o handle do arquivo
 ;em dx o ponteiro para o buffer de leitura
+;retorna o erro em flagErroLeitura
 leArquivo proc near
     push cx
     push ax
@@ -861,14 +866,23 @@ leArquivo proc near
     mov ax, 0
     mov ah, 3fh
     int 21H
+    jc erroLeitura;;testa se houve erro na leitura
     cmp cx, ax
     jne fimArquivo
+    mov cx, 0 ;;coloca zero na variavel que indica erro de leitura
+    mov flagErroLeitura, cx
     pop ax
     pop cx
     ret
 fimArquivo:
     mov cx, 1
     mov fimArquivoFlag, cx
+    pop ax
+    pop cx
+    ret
+erroLeitura:
+    mov cx, 1
+    mov flagErroLeitura, cx
     pop ax
     pop cx
     ret
@@ -1296,6 +1310,8 @@ leituraAltura:
     add dx, ax;atualiza a posiçao do buffer
     mov bx,handleArqPar
     call leArquivo
+    cmp flagErroLeitura, 1
+    je erroNaLeituraPrimeiraLinha
     lea bx , bufferArq ;testa se o caractere lido é ','
     add bx, ax
     cmp BYTE PTR [bx], ch
@@ -1321,6 +1337,8 @@ leituraLargura:
     add dx, ax ;atualiza a posicao do buffer
     mov bx, handleArqPar
     call leArquivo
+    cmp flagErroLeitura, 1
+    je erroNaLeituraPrimeiraLinha
     lea bx, bufferArq ;testa se o caractere lido é CR
     add bx, ax
     cmp BYTE PTR [bx], ch
@@ -1337,6 +1355,8 @@ achouCR:
     lea dx, bufferArq
     mov bx, handleArqPar
     call leArquivo
+    cmp flagErroLeitura, 1
+    je erroNaLeituraPrimeiraLinha
     ;le o LF para pular de linha
     lea bx, bufferArq
     mov al, 10
@@ -1344,7 +1364,10 @@ achouCR:
     call calcTamanho
     ret
 
-
+erroNaLeituraPrimeiraLinha:
+    lea dx, nomeArquivo
+    call indicaErroLeitura
+    ret
 lePrimeiraLinha endp
 
 ;dx: endereco pro buffer
@@ -1364,6 +1387,8 @@ testaLarguraLida:
     mov dx, endTemp
     mov bx, handleTemp
     call leArquivo ;le um byte
+    cmp flagErroLeitura, 1
+    je erroNaLeituraLeCores
     
     ;compara qual cor foi lida
     mov bx, endTemp
@@ -1572,6 +1597,8 @@ leCRLF:
     mov dx, endTemp
     mov bx, handleTemp
     call leArquivo ;le um byte
+    cmp flagErroLeitura, 1
+    je erroNaLeituraLeCores
     mov bx, endTemp ; para comparar se é cr mesmo
     mov al, CR
     cmp BYTE PTR [bx], al
@@ -1587,6 +1614,10 @@ leLF:
     je saiLeCores
     jmp leCRLF
 saiLeCores:
+    ret
+erroNaLeituraLeCores:
+    lea dx, nomeArquivo
+    call indicaErroLeitura
     ret
 leCores endp
 
@@ -1926,4 +1957,22 @@ escreveTotalizadores proc near
     call escreveArquivo
     ret
 escreveTotalizadores endp
+
+;apaga a tela e indica erro ao ler o arquivo
+;recebe o endereço do string com o nome do arquivo por dx
+indicaErroLeitura proc near
+    ;;limpa a tela
+    mov endTemp, dx
+    call alteraModoGrafico
+    call alteraModoTexto
+
+    lea bx, cabecalho
+    call printf_s
+    lea bx, strErroLeitura;printa a string anunciando o erro
+    call printf_s
+    mov bx, endTemp
+    call printf_s ;coloca o nome do arquivo
+    call pulaLinha
+    jmp pedeNome
+indicaErroLeitura endp
 end
