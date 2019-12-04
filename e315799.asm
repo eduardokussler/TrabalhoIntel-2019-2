@@ -499,7 +499,10 @@ continua:
     mov ax, 0
     mov alturaTemp, ax
     mov larguraTemp, ax   
-    
+
+
+;;Le cada linha do arquivo, para pegar as cores
+;;dos quadrados e desenha-os
 leLinha:
     mov ax, alturaTemp
     cmp ax, altura
@@ -587,7 +590,7 @@ alteraModoGrafico proc near
     ret
 alteraModoGrafico endp
 ;recebe em bx o endereço para o string terminado em '\0'
-;codigo adaptado dos slides
+;codigo adaptado do moodle
 printf_s	proc	near
 	mov		dl,[bx]
 	cmp		dl,0
@@ -982,7 +985,7 @@ printaErro endp
 
 
 ;conversao de numero de 16bits para string
-;codigo retirado dos slides
+;codigo retirado do moodle
 ;entra numero em ax
 ;entra em bx o endereço pro string de saida
 sprintf_w	proc	near
@@ -1162,7 +1165,7 @@ retangulo endp
 
 ;recebe o string em bx ponteiro para o string de origem
 ;saida em AX
-;retirado dos slides
+;retirado do moodle
 atoi	proc near
 
 		; A = 0;
@@ -1884,6 +1887,7 @@ printaTotalizadores proc near
 
     ret
 printaTotalizadores endp
+;PARA O BONUS
 ;calcula o tamanho que o quadrado pode ter
 calcTamanho proc near
     push ax
@@ -1912,7 +1916,7 @@ testaLargura1:
     div bx;divide 624(largura max disponivel pra desenho) pelo numero de colunas
 
 cmpLargAlt:
-    cmp ax, resTmp
+    cmp ax, resTmp ;testa qual dos valores é menor e usa o menor como o tamanho dos quadrados
     jbe moveLarg
     jmp moveAlt
 fimCalcTamanho:
