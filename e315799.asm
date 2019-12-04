@@ -1139,6 +1139,7 @@ retangulo proc near
     call drawLineV ;desenha a linha vertical a esquerda
 
     mov bx, tamanhoLadoV
+    inc bx
     mov tamanho, bx
     mov cx, xInicio
     mov dx, yInicio
@@ -1147,6 +1148,7 @@ retangulo proc near
     call drawLineV ;desenha a linha vertical a direita
 
     mov bx, tamanhoLadoH
+    inc bx
     mov tamanho, bx
     mov cx, xInicio
     mov dx, yInicio
@@ -1216,14 +1218,18 @@ setCursor endp
 ;e em tamanhoLadoV o tamanho dos lados verticais
 quadradoCol proc near
     push bx
+    
     mov xInicioQuad, cx
     mov yInicioQuad, dx
     mov corQuad, al
     mov al, 0fh ;sempre desenha um quadrado com borda branca
-    call retangulo
     dec tamanhoLadoH ;altera para que as linhas sejam desenhadas com 22 pixels
+    dec tamanhoLadoV
+    call retangulo
      ;para a borda ficar à mostra
+    dec tamanhoLadoH
     inc xInicioQuad
+    
 alteraTamanho:
     ;altera a altura das linhas que pintarao o quadrado
     inc yInicioQuad
