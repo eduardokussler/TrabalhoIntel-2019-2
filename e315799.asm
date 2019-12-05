@@ -535,7 +535,11 @@ mostraContadores:
     ;fecha o arquivo com o relatorio da parede
     mov bx, handleArqRel
     call fechaArquivo
-    call esperaTecla
+esperaTecla1: ;espera o usuário digitar uma tecla
+    call kbhit
+    cmp ax, 1
+    jne esperaTecla1
+    call flushBuffer
     jmp comecoApp
 
 acabouPrograma:
@@ -1985,4 +1989,29 @@ indicaErroLeitura proc near
     call pulaLinha
     jmp pedeNome
 indicaErroLeitura endp
+
+;testa se uma tecla foi digitada
+;retorna 1 em ax caso tenha sido digitada
+;retorna 0 em ax caso não tenha sido
+
+kbhit proc near
+    mov ax, 0
+    mov ah, 0bh
+    int 21H
+    cmp al, 0ffh
+    je digitou
+    mov ax, 0
+    ret
+digitou:
+    mov ax, 1
+    ret
+kbhit endp
+
+;;limpa o stdin
+flushBuffer proc near
+    mov al, 2h
+    mov ah, 0ch
+    int 21H
+    ret
+flushBuffer endp
 end
