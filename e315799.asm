@@ -2009,7 +2009,7 @@ kbhit endp
 
 ;;limpa o stdin
 flushBuffer proc near
-    mov al, 2h
+    mov al, 2h ;;não chama interrupçao para input apos limpar o buffer
     mov ah, 0ch
     int 21H
     ret
